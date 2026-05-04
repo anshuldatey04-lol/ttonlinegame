@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Table Tennis Online — Real-Time 3D Browser Game</title>
+  <meta name="description" content="Play real-time 3D table tennis in your browser. Single player, online multiplayer, or local split-screen. Use your phone as a motion racket controller." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ─────────────────────────── SCREENS ──────────────────────────────────── -->
+
+<!-- HOME SCREEN -->
+<div id="screen-home" class="screen active">
+  <div class="home-bg">
+    <div class="particles" id="particles"></div>
+  </div>
+
+  <header class="home-header">
+    <div class="logo-wrap">
+      <span class="logo-icon">🏓</span>
+      <h1 class="logo-text">Table Tennis<span class="accent"> Online</span></h1>
+    </div>
+    <div class="conn-badge" id="conn-badge">
+      <span class="conn-dot" id="conn-dot"></span>
+      <span id="conn-label">Disconnected</span>
+    </div>
+  </header>
+
+  <main class="home-main">
+    <!-- session code card -->
+    <div class="code-card glass">
+      <div class="code-label">📱 Your Connection Code</div>
+      <div class="code-display" id="session-code">------</div>
+      <button class="btn btn-ghost btn-sm" id="btn-copy-code">📋 Copy Code</button>
+      <div class="phone-status" id="phone-status">No phone connected</div>
+    </div>
+
+    <!-- mode buttons -->
+    <div class="mode-grid">
+      <button class="mode-card" id="btn-single" data-mode="single">
+        <div class="mode-icon">🤖</div>
+        <div class="mode-title">Single Player</div>
+        <div class="mode-sub">vs AI Bot</div>
+      </button>
+      <button class="mode-card" id="btn-multi" data-mode="multi">
+        <div class="mode-icon">🌐</div>
+        <div class="mode-title">Multiplayer</div>
+        <div class="mode-sub">Online — share link</div>
+      </button>
+      <button class="mode-card" id="btn-local" data-mode="local">
+        <div class="mode-icon">👥</div>
+        <div class="mode-title">Local Multiplayer</div>
+        <div class="mode-sub">Split-screen</div>
+      </button>
+    </div>
+
+    <!-- settings -->
+    <details class="settings-panel glass" id="settings-panel">
+      <summary class="settings-toggle">⚙️ Settings</summary>
+      <div class="settings-body">
+        <label class="setting-row">
+          <span>🔊 Sound</span>
+          <input type="checkbox" id="snd-toggle" checked />
+        </label>
+        <label class="setting-row">
+          <span>Volume</span>
+          <input type="range" id="snd-volume" min="0" max="100" value="70" />
+          <span id="snd-vol-label">70</span>
+        </label>
+        <label class="setting-row">
+          <span>📱 Racket Sensitivity</span>
+          <input type="range" id="sensitivity" min="1" max="10" value="5" />
+          <span id="sens-label">5</span>
+        </label>
+      </div>
+    </details>
+  </main>
+</div>
+
+<!-- MULTIPLAYER LOBBY -->
+<div id="screen-lobby" class="screen">
+  <div class="lobby-minimal glass">
+    <div class="lobby-header-mini">
+      <h2 class="mini-title">Multiplayer</h2>
+      <div class="mini-status" id="lobby-status">Waiting for opponent...</div>
+    </div>
+
+    <div class="mini-players">
+      <div class="mini-player red">
+        <div class="mini-avatar">🔴</div>
+        <div class="mini-name" id="lobby-p1">You</div>
+      </div>
+      <div class="mini-vs">VS</div>
+      <div class="mini-player blue">
+        <div class="mini-avatar">🔵</div>
+        <div class="mini-name" id="lobby-p2">Searching</div>
+      </div>
+    </div>
+
+    <div class="mini-share-row">
+      <div class="mini-url-box" id="lobby-url">—</div>
+      <button class="btn-icon" id="btn-copy-link" title="Copy Link">📋</button>
+    </div>
+
+    <button class="btn-text" id="btn-lobby-back">Cancel Match</button>
+  </div>
+</div>
+
+<!-- DIFFICULTY SELECTION SCREEN -->
+<div id="screen-difficulty" class="screen">
+  <div class="difficulty-wrap glass">
+    <h2 class="difficulty-title">🎯 Select Difficulty</h2>
+    <div class="difficulty-grid">
+      <button class="diff-card" data-diff="easy">
+        <div class="diff-icon">🟢</div>
+        <div class="diff-label">Easy</div>
+        <div class="diff-desc">75% Miss chance. Slower bot.</div>
+      </button>
+      <button class="diff-card active" data-diff="medium">
+        <div class="diff-icon">🟡</div>
+        <div class="diff-label">Medium</div>
+        <div class="diff-desc">50% Miss chance. Balanced skill.</div>
+      </button>
+      <button class="diff-card" data-diff="hard">
+        <div class="diff-icon">🔴</div>
+        <div class="diff-label">Hard</div>
+        <div class="diff-desc">25% Miss chance. Pro reflexes.</div>
+      </button>
+    </div>
+    <div class="difficulty-actions">
+      <button class="btn btn-accent" id="btn-start-single">Start Match</button>
+      <button class="btn btn-ghost" id="btn-diff-back">← Back</button>
+    </div>
+  </div>
+</div>
+
+<!-- GAME CANVAS SCREEN -->
+<div id="screen-game" class="screen">
+  <!-- HUD -->
+  <div class="hud" id="hud">
+    <div class="score-panel red-panel">
+      <div class="player-label red-label" id="hud-label-red">YOU</div>
+      <div class="score-num" id="score-red">0</div>
+      <div class="serve-dot" id="serve-red"></div>
+    </div>
+    <div class="hud-center">
+      <div class="hud-timer" id="hud-timer">—</div>
+      <div class="phone-indicator" id="hud-phone">📱 Mouse</div>
+    </div>
+    <div class="score-panel blue-panel">
+      <div class="serve-dot" id="serve-blue"></div>
+      <div class="score-num" id="score-blue">0</div>
+      <div class="player-label blue-label" id="hud-label-blue">BOT</div>
+    </div>
+  </div>
+
+  <!-- Split-screen divider (local only) -->
+  <div class="split-divider" id="split-divider"></div>
+
+  <!-- Three.js canvas -->
+  <canvas id="game-canvas"></canvas>
+
+  <!-- Countdown overlay -->
+  <div class="countdown-overlay hidden" id="countdown-overlay">
+    <div class="countdown-num" id="countdown-num">3</div>
+  </div>
+
+  <!-- Point announcement -->
+  <div class="point-flash hidden" id="point-flash">
+    <div class="point-text" id="point-text">Point!</div>
+  </div>
+
+  <!-- Pause overlay -->
+  <div class="pause-overlay hidden" id="pause-overlay">
+    <div class="pause-card glass">
+      <h3>⏸ Paused</h3>
+      <div class="pause-btns">
+        <button class="btn btn-accent" id="btn-resume">▶ Resume</button>
+        <button class="btn btn-primary" id="btn-restart">🔄 Restart</button>
+        <button class="btn btn-ghost" id="btn-pause-exit">🚪 Exit</button>
+      </div>
+      <div class="pause-settings">
+        <label class="setting-row">
+          <span>🔊 Volume</span>
+          <input type="range" id="pause-volume" min="0" max="100" value="70" />
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- ESC hint -->
+  <div class="esc-hint" id="esc-hint">ESC — Pause</div>
+</div>
+
+<!-- GAME OVER SCREEN -->
+<div id="screen-gameover" class="screen">
+  <div class="gameover-wrap">
+    <div class="gameover-anim" id="gameover-anim">🏆</div>
+    <h2 class="gameover-title" id="gameover-title">You Won!</h2>
+    <div class="gameover-scores" id="gameover-scores">15 — 8</div>
+    <div class="gameover-btns">
+      <button class="btn btn-accent" id="btn-replay">🔄 Play Again</button>
+      <button class="btn btn-ghost"  id="btn-go-home">🏠 Home</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOCAL MULTIPLAYER — uses same game canvas but different camera layout -->
+
+<!-- ─────────────────────────── SCRIPTS ───────────────────────────────────── -->
+<script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/physics.js"></script>
+<script src="js/renderer.js"></script>
+<script src="js/input.js"></script>
+<script src="js/network.js"></script>
+<script src="js/bot.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>
